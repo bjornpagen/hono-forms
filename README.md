@@ -91,6 +91,6 @@ Bjorn Pagen <11238136+bjornpagen@users.noreply.github.com>
 ## Links
 
 - [GitHub Repository](https://github.com/bjornpagen/hono-forms)
-- [npm Package](https://www.npmjs.com/package/hono-forms)
+- [npm Package](https://www.npmjs.com/package/@bjornpagen/hono-forms)
 - [Hono Framework](https://hono.dev/)
 - [Zod Validation Library](https://github.com/colinhacks/zod)
