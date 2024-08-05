@@ -1,0 +1,16 @@
+{
+	"$schema": "https://swc.rs/schema.json",
+	"jsc": {
+		"parser": {
+			"syntax": "typescript",
+			"tsx": false
+		},
+		"target": "esnext"
+	},
+	"module": {
+		"type": "es6"
+	},
+	"minify": true,
+	"isModule": true,
+	"sourceMaps": true
+}
