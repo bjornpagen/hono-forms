@@ -1,13 +1,13 @@
 import { Hono, Context } from "hono"
 import { z } from "zod"
 
-interface RenderOptions {
+interface RenderOptions<T extends Record<string, any>> {
 	urlParams?: Record<string, string>
-	values?: Record<string, any>
+	values?: Partial<T>
 }
 
-type Form = {
-	render: (options?: RenderOptions) => string
+type Form<T extends Record<string, any>> = {
+	render: (options?: RenderOptions<T>) => string
 	decorateRoute: (app: Hono) => void
 }
 
@@ -108,14 +108,14 @@ type FormField =
 	| { type: "color"; name: string; label: string; options: ColorFieldOptions }
 	| { type: "tel"; name: string; label: string; options: TelFieldOptions }
 
-type SideEffect = (data: Record<string, unknown>) => Promise<void>
+type SideEffect<T> = (data: T) => Promise<void>
 type SuccessHandler = (c: Context) => Promise<Response>
 type ErrorHandler = (c: Context, error: Error) => Promise<Response>
 
-export class FormBuilder {
+export class FormBuilder<T extends Record<string, any>> {
 	#fields: FormField[] = []
 	#method: "GET" | "POST"
-	#sideEffect?: SideEffect
+	#sideEffect?: SideEffect<T>
 	#successHandler?: SuccessHandler
 	#errorHandler?: ErrorHandler
 	#pathPattern: string
@@ -125,84 +125,84 @@ export class FormBuilder {
 		this.#method = method
 	}
 
-	addText(name: string, label: string, options: TextFieldOptions = {}): FormBuilder {
+	addText<K extends keyof T>(name: K & string, label: string, options: TextFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "text", options })
 		return this
 	}
 
-	addUrl(name: string, label: string, options: UrlFieldOptions = {}): FormBuilder {
+	addUrl<K extends keyof T>(name: K & string, label: string, options: UrlFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "url", options })
 		return this
 	}
 
-	addEmail(name: string, label: string, options: EmailFieldOptions = {}): FormBuilder {
+	addEmail<K extends keyof T>(name: K & string, label: string, options: EmailFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "email", options })
 		return this
 	}
 
-	addNumber(name: string, label: string, options: NumberFieldOptions = {}): FormBuilder {
+	addNumber<K extends keyof T>(name: K & string, label: string, options: NumberFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "number", options })
 		return this
 	}
 
-	addDate(name: string, label: string, options: DateFieldOptions = {}): FormBuilder {
+	addDate<K extends keyof T>(name: K & string, label: string, options: DateFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "date", options })
 		return this
 	}
 
-	addCheckbox(name: string, label: string, options: CheckboxFieldOptions = {}): FormBuilder {
+	addCheckbox<K extends keyof T>(name: K & string, label: string, options: CheckboxFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "checkbox", options })
 		return this
 	}
 
-	addPassword(name: string, label: string, options: PasswordFieldOptions = {}): FormBuilder {
+	addPassword<K extends keyof T>(name: K & string, label: string, options: PasswordFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "password", options })
 		return this
 	}
 
-	addRange(name: string, label: string, options: RangeFieldOptions = {}): FormBuilder {
+	addRange<K extends keyof T>(name: K & string, label: string, options: RangeFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "range", options })
 		return this
 	}
 
-	addFile(name: string, label: string, options: FileFieldOptions = {}): FormBuilder {
+	addFile<K extends keyof T>(name: K & string, label: string, options: FileFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "file", options })
 		return this
 	}
 
-	addSelect(name: string, label: string, options: SelectFieldOptions): FormBuilder {
+	addSelect<K extends keyof T>(name: K & string, label: string, options: SelectFieldOptions): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "select", options })
 		return this
 	}
 
-	addColor(name: string, label: string, options: ColorFieldOptions = {}): FormBuilder {
+	addColor<K extends keyof T>(name: K & string, label: string, options: ColorFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "color", options })
 		return this
 	}
 
-	addTel(name: string, label: string, options: TelFieldOptions = {}): FormBuilder {
+	addTel<K extends keyof T>(name: K & string, label: string, options: TelFieldOptions = {}): FormBuilder<T> {
 		this.#fields.push({ name, label, type: "tel", options })
 		return this
 	}
 
-	setSideEffect(fn: SideEffect): FormBuilder {
+	setSideEffect(fn: SideEffect<T>): FormBuilder<T> {
 		this.#sideEffect = fn
 		return this
 	}
 
-	setSuccessHandler(fn: SuccessHandler): FormBuilder {
+	setSuccessHandler(fn: SuccessHandler): FormBuilder<T> {
 		this.#successHandler = fn
 		return this
 	}
 
-	setErrorHandler(fn: ErrorHandler): FormBuilder {
+	setErrorHandler(fn: ErrorHandler): FormBuilder<T> {
 		this.#errorHandler = fn
 		return this
 	}
 
 	#parsePathPattern(pathPattern: string): PathParam[] {
-		const params: PathParam[] = []
-		const regex = /:([a-zA-Z_][a-zA-Z0-9_]*)({([^}]+)})?/g
+		let params: PathParam[] = []
+		let regex = /:([a-zA-Z_][a-zA-Z0-9_]*)({([^}]+)})?/g
 		let match
 
 		while ((match = regex.exec(pathPattern)) !== null) {
@@ -220,14 +220,14 @@ export class FormBuilder {
 		pathParameters: PathParam[],
 		method: "GET" | "POST",
 		fields: FormField[]
-	): (urlParams?: Record<string, string>, defaultValues?: Record<string, any>) => string {
-		return (urlParams: Record<string, string> = {}, defaultValues: Record<string, any> = {}) => {
+	): (urlParams?: Record<string, string>, defaultValues?: Partial<T>) => string {
+		return (urlParams: Record<string, string> = {}, defaultValues: Partial<T> = {}) => {
 			let actionPath = pathPattern
-			const missingParams: string[] = []
-			const invalidParams: string[] = []
+			let missingParams: string[] = []
+			let invalidParams: string[] = []
 
-			for (const { name, regex } of pathParameters) {
-				const value = urlParams[name]
+			for (let { name, regex } of pathParameters) {
+				let value = urlParams[name]
 				if (value === undefined || value === "") {
 					missingParams.push(name)
 				} else {
@@ -292,10 +292,11 @@ export class FormBuilder {
 						html += `<select name="${field.name}"${!field.options.optional ? " required" : ""}>`
 						if (field.options.placeholder)
 							html += `<option value disabled selected>${field.options.placeholder}</option>`
-						for (const option of field.options.options) {
-							const isSelected =
-								defaultValues[field.name] === option.value ||
-								(Array.isArray(defaultValues[field.name]) && defaultValues[field.name].includes(option.value))
+						for (let option of field.options.options) {
+							let isSelected =
+								defaultValues[field.name as keyof T] === option.value ||
+								(Array.isArray(defaultValues[field.name as keyof T]) &&
+									defaultValues[field.name as keyof T].includes(option.value))
 							html += `<option value="${option.value}"${isSelected ? " selected" : ""}>${option.label}</option>`
 						}
 						html += `</select></label>`
@@ -314,8 +315,8 @@ export class FormBuilder {
 				if (!(field.options as any)?.optional) html += " required"
 
 				// Use defaultValues for setting the value attribute
-				if (field.type !== "password" && field.type !== "file" && defaultValues[field.name] !== undefined) {
-					const value = defaultValues[field.name]
+				if (field.type !== "password" && field.type !== "file" && defaultValues[field.name as keyof T] !== undefined) {
+					let value = defaultValues[field.name as keyof T] as any
 
 					if (typeof value === "boolean") {
 						if (value) html += " checked"
@@ -323,6 +324,8 @@ export class FormBuilder {
 						html += ` value="${convertToLocalDate(value)}"`
 					} else if (typeof value === "number" || typeof value === "string") {
 						html += ` value="${value}"`
+					} else {
+						throw new Error(`Unsupported value type for input field: ${typeof value}`)
 					}
 				}
 				if (field.type === "file") {
@@ -415,7 +418,7 @@ export class FormBuilder {
 		pathPattern: string,
 		method: "GET" | "POST",
 		zodSchema: z.ZodObject<Record<string, z.ZodTypeAny>>,
-		sideEffect: SideEffect | undefined,
+		sideEffect: SideEffect<T> | undefined,
 		successHandler: SuccessHandler,
 		errorHandler: ErrorHandler
 	) {
@@ -427,7 +430,7 @@ export class FormBuilder {
 					let data = zodSchema.parse(body)
 
 					if (sideEffect) {
-						await sideEffect(data)
+						await sideEffect(data as T)
 					}
 
 					return await successHandler(c)
@@ -441,7 +444,7 @@ export class FormBuilder {
 		}
 	}
 
-	build(): Form {
+	build(): Form<T> {
 		if (!this.#errorHandler) {
 			throw new Error("Error handler not set")
 		}
@@ -462,7 +465,7 @@ export class FormBuilder {
 		)
 
 		return {
-			render: (options: RenderOptions = {}) => generateHtml(options.urlParams, options.values),
+			render: (options: RenderOptions<T> = {}) => generateHtml(options.urlParams, options.values),
 			decorateRoute
 		}
 	}
