@@ -1,13 +1,13 @@
 import { Hono, Context } from "hono"
 import { z } from "zod"
 
-interface RenderOptions<T extends Record<string, any>> {
+interface RenderOptions {
 	urlParams?: Record<string, string>
-	values?: Partial<T>
+	values?: Record<string, any>
 }
 
-type Form<T extends Record<string, any>> = {
-	render: (options?: RenderOptions<T>) => string
+type Form = {
+	render: (options?: RenderOptions) => string
 	decorateRoute: (app: Hono) => void
 }
 
@@ -16,9 +16,7 @@ interface PathParam {
 	regex?: string
 }
 
-interface BaseFieldOptions {}
-
-interface TextFieldOptions extends BaseFieldOptions {
+interface TextFieldOptions {
 	optional?: boolean
 	placeholder?: string
 	minLength?: number
@@ -26,7 +24,7 @@ interface TextFieldOptions extends BaseFieldOptions {
 	pattern?: RegExp
 }
 
-interface UrlFieldOptions extends BaseFieldOptions {
+interface UrlFieldOptions {
 	optional?: boolean
 	placeholder?: string
 	minLength?: number
@@ -34,7 +32,7 @@ interface UrlFieldOptions extends BaseFieldOptions {
 	pattern?: RegExp
 }
 
-interface EmailFieldOptions extends BaseFieldOptions {
+interface EmailFieldOptions {
 	optional?: boolean
 	placeholder?: string
 	minLength?: number
@@ -42,7 +40,7 @@ interface EmailFieldOptions extends BaseFieldOptions {
 	pattern?: RegExp
 }
 
-interface PasswordFieldOptions extends BaseFieldOptions {
+interface PasswordFieldOptions {
 	optional?: boolean
 	placeholder?: string
 	minLength?: number
@@ -50,43 +48,43 @@ interface PasswordFieldOptions extends BaseFieldOptions {
 	pattern?: RegExp
 }
 
-interface NumberFieldOptions extends BaseFieldOptions {
+interface NumberFieldOptions {
 	optional?: boolean
 	min?: number
 	max?: number
 	integer?: boolean
 }
 
-interface DateFieldOptions extends BaseFieldOptions {
+interface DateFieldOptions {
 	optional?: boolean
 	min?: Date
 	max?: Date
 }
 
-interface CheckboxFieldOptions extends BaseFieldOptions {
+interface CheckboxFieldOptions {
 	optional?: boolean
 }
 
-interface RangeFieldOptions extends BaseFieldOptions {
+interface RangeFieldOptions {
 	min?: number
 	max?: number
 	integer?: boolean
 }
 
-interface FileFieldOptions extends BaseFieldOptions {
+interface FileFieldOptions {
 	optional?: boolean
 	accept?: string
 }
 
-interface SelectFieldOptions extends BaseFieldOptions {
+interface SelectFieldOptions {
 	optional?: boolean
 	placeholder?: string
 	options: Array<{ value: string; label: string }>
 }
 
-interface ColorFieldOptions extends BaseFieldOptions {}
+interface ColorFieldOptions {}
 
-interface TelFieldOptions extends BaseFieldOptions {
+interface TelFieldOptions {
 	optional?: boolean
 	placeholder?: string
 	pattern?: RegExp
@@ -108,14 +106,14 @@ type FormField =
 	| { type: "color"; name: string; label: string; options: ColorFieldOptions }
 	| { type: "tel"; name: string; label: string; options: TelFieldOptions }
 
-type SideEffect<T> = (data: T) => Promise<void>
+type SideEffect = (data: Record<string, any>) => Promise<void>
 type SuccessHandler = (c: Context) => Promise<Response>
 type ErrorHandler = (c: Context, error: Error) => Promise<Response>
 
-export class FormBuilder<T extends Record<string, any>> {
+export class FormBuilder {
 	#fields: FormField[] = []
 	#method: "GET" | "POST"
-	#sideEffect?: SideEffect<T>
+	#sideEffect?: SideEffect
 	#successHandler?: SuccessHandler
 	#errorHandler?: ErrorHandler
 	#pathPattern: string
@@ -125,77 +123,77 @@ export class FormBuilder<T extends Record<string, any>> {
 		this.#method = method
 	}
 
-	addText<K extends keyof T>(name: K & string, label: string, options: TextFieldOptions = {}): FormBuilder<T> {
+	addText(name: string, label: string, options: TextFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "text", options })
 		return this
 	}
 
-	addUrl<K extends keyof T>(name: K & string, label: string, options: UrlFieldOptions = {}): FormBuilder<T> {
+	addUrl(name: string, label: string, options: UrlFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "url", options })
 		return this
 	}
 
-	addEmail<K extends keyof T>(name: K & string, label: string, options: EmailFieldOptions = {}): FormBuilder<T> {
+	addEmail(name: string, label: string, options: EmailFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "email", options })
 		return this
 	}
 
-	addNumber<K extends keyof T>(name: K & string, label: string, options: NumberFieldOptions = {}): FormBuilder<T> {
+	addNumber(name: string, label: string, options: NumberFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "number", options })
 		return this
 	}
 
-	addDate<K extends keyof T>(name: K & string, label: string, options: DateFieldOptions = {}): FormBuilder<T> {
+	addDate(name: string, label: string, options: DateFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "date", options })
 		return this
 	}
 
-	addCheckbox<K extends keyof T>(name: K & string, label: string, options: CheckboxFieldOptions = {}): FormBuilder<T> {
+	addCheckbox(name: string, label: string, options: CheckboxFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "checkbox", options })
 		return this
 	}
 
-	addPassword<K extends keyof T>(name: K & string, label: string, options: PasswordFieldOptions = {}): FormBuilder<T> {
+	addPassword(name: string, label: string, options: PasswordFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "password", options })
 		return this
 	}
 
-	addRange<K extends keyof T>(name: K & string, label: string, options: RangeFieldOptions = {}): FormBuilder<T> {
+	addRange(name: string, label: string, options: RangeFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "range", options })
 		return this
 	}
 
-	addFile<K extends keyof T>(name: K & string, label: string, options: FileFieldOptions = {}): FormBuilder<T> {
+	addFile(name: string, label: string, options: FileFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "file", options })
 		return this
 	}
 
-	addSelect<K extends keyof T>(name: K & string, label: string, options: SelectFieldOptions): FormBuilder<T> {
+	addSelect(name: string, label: string, options: SelectFieldOptions): FormBuilder {
 		this.#fields.push({ name, label, type: "select", options })
 		return this
 	}
 
-	addColor<K extends keyof T>(name: K & string, label: string, options: ColorFieldOptions = {}): FormBuilder<T> {
+	addColor(name: string, label: string, options: ColorFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "color", options })
 		return this
 	}
 
-	addTel<K extends keyof T>(name: K & string, label: string, options: TelFieldOptions = {}): FormBuilder<T> {
+	addTel(name: string, label: string, options: TelFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "tel", options })
 		return this
 	}
 
-	setSideEffect(fn: SideEffect<T>): FormBuilder<T> {
+	setSideEffect(fn: SideEffect): FormBuilder {
 		this.#sideEffect = fn
 		return this
 	}
 
-	setSuccessHandler(fn: SuccessHandler): FormBuilder<T> {
+	setSuccessHandler(fn: SuccessHandler): FormBuilder {
 		this.#successHandler = fn
 		return this
 	}
 
-	setErrorHandler(fn: ErrorHandler): FormBuilder<T> {
+	setErrorHandler(fn: ErrorHandler): FormBuilder {
 		this.#errorHandler = fn
 		return this
 	}
@@ -220,8 +218,8 @@ export class FormBuilder<T extends Record<string, any>> {
 		pathParameters: PathParam[],
 		method: "GET" | "POST",
 		fields: FormField[]
-	): (urlParams?: Record<string, string>, defaultValues?: Partial<T>) => string {
-		return (urlParams: Record<string, string> = {}, defaultValues: Partial<T> = {}) => {
+	): (urlParams?: Record<string, string>, defaultValues?: Record<string, any>) => string {
+		return (urlParams: Record<string, string> = {}, defaultValues: Record<string, any> = {}) => {
 			let actionPath = pathPattern
 			let missingParams: string[] = []
 			let invalidParams: string[] = []
@@ -294,9 +292,8 @@ export class FormBuilder<T extends Record<string, any>> {
 							html += `<option value disabled selected>${field.options.placeholder}</option>`
 						for (let option of field.options.options) {
 							let isSelected =
-								defaultValues[field.name as keyof T] === option.value ||
-								(Array.isArray(defaultValues[field.name as keyof T]) &&
-									defaultValues[field.name as keyof T].includes(option.value))
+								defaultValues[field.name] === option.value ||
+								(Array.isArray(defaultValues[field.name]) && defaultValues[field.name].includes(option.value))
 							html += `<option value="${option.value}"${isSelected ? " selected" : ""}>${option.label}</option>`
 						}
 						html += `</select></label>`
@@ -315,8 +312,8 @@ export class FormBuilder<T extends Record<string, any>> {
 				if (!(field.options as any)?.optional) html += " required"
 
 				// Use defaultValues for setting the value attribute
-				if (field.type !== "password" && field.type !== "file" && defaultValues[field.name as keyof T] !== undefined) {
-					let value = defaultValues[field.name as keyof T] as any
+				if (field.type !== "password" && field.type !== "file" && defaultValues[field.name] !== undefined) {
+					let value = defaultValues[field.name] as any
 
 					if (typeof value === "boolean") {
 						if (value) html += " checked"
@@ -418,7 +415,7 @@ export class FormBuilder<T extends Record<string, any>> {
 		pathPattern: string,
 		method: "GET" | "POST",
 		zodSchema: z.ZodObject<Record<string, z.ZodTypeAny>>,
-		sideEffect: SideEffect<T> | undefined,
+		sideEffect: SideEffect | undefined,
 		successHandler: SuccessHandler,
 		errorHandler: ErrorHandler
 	) {
@@ -430,7 +427,7 @@ export class FormBuilder<T extends Record<string, any>> {
 					let data = zodSchema.parse(body)
 
 					if (sideEffect) {
-						await sideEffect(data as T)
+						await sideEffect(data)
 					}
 
 					return await successHandler(c)
@@ -444,7 +441,7 @@ export class FormBuilder<T extends Record<string, any>> {
 		}
 	}
 
-	build(): Form<T> {
+	build(): Form {
 		if (!this.#errorHandler) {
 			throw new Error("Error handler not set")
 		}
@@ -465,7 +462,7 @@ export class FormBuilder<T extends Record<string, any>> {
 		)
 
 		return {
-			render: (options: RenderOptions<T> = {}) => generateHtml(options.urlParams, options.values),
+			render: (options: RenderOptions = {}) => generateHtml(options.urlParams, options.values),
 			decorateRoute
 		}
 	}
