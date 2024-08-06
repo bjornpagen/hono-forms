@@ -108,14 +108,14 @@ type FormField =
 	| { type: "color"; name: string; label: string; options: ColorFieldOptions }
 	| { type: "tel"; name: string; label: string; options: TelFieldOptions }
 
-type SideEffectFunction = (data: Record<string, unknown>) => Promise<void>
+type SideEffect = (data: Record<string, unknown>) => Promise<void>
 type SuccessHandler = (c: Context) => Promise<Response>
 type ErrorHandler = (c: Context, error: Error) => Promise<Response>
 
 export class FormBuilder {
 	#fields: FormField[] = []
 	#method: "GET" | "POST"
-	#sideEffect?: SideEffectFunction
+	#sideEffect?: SideEffect
 	#successHandler?: SuccessHandler
 	#errorHandler?: ErrorHandler
 	#pathPattern: string
@@ -185,7 +185,7 @@ export class FormBuilder {
 		return this
 	}
 
-	setSideEffect(fn: SideEffectFunction): FormBuilder {
+	setSideEffect(fn: SideEffect): FormBuilder {
 		this.#sideEffect = fn
 		return this
 	}
@@ -415,7 +415,7 @@ export class FormBuilder {
 		pathPattern: string,
 		method: "GET" | "POST",
 		zodSchema: z.ZodObject<Record<string, z.ZodTypeAny>>,
-		sideEffect: SideEffectFunction | undefined,
+		sideEffect: SideEffect | undefined,
 		successHandler: SuccessHandler,
 		errorHandler: ErrorHandler
 	) {
