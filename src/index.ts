@@ -411,7 +411,7 @@ export class FormBuilder {
 		pathPattern: string,
 		method: "GET" | "POST",
 		zodSchema: z.ZodObject<Record<string, z.ZodTypeAny>>,
-		sideEffect: ((data: Record<string, any>) => Promise<void>) | undefined,
+		sideEffect: ((c: Context, data: Record<string, any>) => Promise<void>) | undefined,
 		successHandler: (c: Context) => Promise<Response>,
 		errorHandler: (c: Context, error: Error) => Promise<Response>
 	) {
@@ -423,7 +423,7 @@ export class FormBuilder {
 					let data = zodSchema.parse(body)
 
 					if (sideEffect) {
-						await sideEffect(data)
+						await sideEffect(c, data)
 					}
 
 					return await successHandler(c)
