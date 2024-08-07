@@ -416,7 +416,7 @@ export class FormBuilder {
 		errorHandler: (c: Context, error: Error) => Promise<Response>
 	) {
 		return (app: any) => {
-			app.on(method, pathPattern, async (c) => {
+			app.on(method, pathPattern, async (c: Context) => {
 				let body = method === "GET" ? c.req.query() : await c.req.parseBody()
 
 				try {
