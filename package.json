@@ -1,6 +1,6 @@
 {
 	"name": "@bjornpagen/hono-forms",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "A form builder and validator library for Hono applications",
 	"keywords": [
 		"hono",

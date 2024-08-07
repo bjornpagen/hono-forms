@@ -8,7 +8,7 @@ interface RenderOptions {
 
 type Form = {
 	render: (options?: RenderOptions) => string
-	decorateRoute: (app: Hono) => void
+	decorateRoute: (app: any) => void
 }
 
 interface PathParam {
@@ -106,16 +106,12 @@ type FormField =
 	| { type: "color"; name: string; label: string; options: ColorFieldOptions }
 	| { type: "tel"; name: string; label: string; options: TelFieldOptions }
 
-type SideEffect = (data: Record<string, any>) => Promise<void>
-type SuccessHandler = (c: Context) => Promise<Response>
-type ErrorHandler = (c: Context, error: Error) => Promise<Response>
-
 export class FormBuilder {
 	#fields: FormField[] = []
 	#method: "GET" | "POST"
-	#sideEffect?: SideEffect
-	#successHandler?: SuccessHandler
-	#errorHandler?: ErrorHandler
+	#sideEffect?: (data: Record<string, any>) => Promise<void>
+	#successHandler?: (c: Context) => Promise<Response>
+	#errorHandler?: (c: Context, error: Error) => Promise<Response>
 	#pathPattern: string
 
 	constructor(pathPattern: string, method: "GET" | "POST" = "POST") {
@@ -183,17 +179,17 @@ export class FormBuilder {
 		return this
 	}
 
-	setSideEffect(fn: SideEffect): FormBuilder {
+	setSideEffect(fn: (data: Record<string, any>) => Promise<void>): FormBuilder {
 		this.#sideEffect = fn
 		return this
 	}
 
-	setSuccessHandler(fn: SuccessHandler): FormBuilder {
+	setSuccessHandler(fn: (c: Context) => Promise<Response>): FormBuilder {
 		this.#successHandler = fn
 		return this
 	}
 
-	setErrorHandler(fn: ErrorHandler): FormBuilder {
+	setErrorHandler(fn: (c: Context, error: Error) => Promise<Response>): FormBuilder {
 		this.#errorHandler = fn
 		return this
 	}
@@ -415,11 +411,11 @@ export class FormBuilder {
 		pathPattern: string,
 		method: "GET" | "POST",
 		zodSchema: z.ZodObject<Record<string, z.ZodTypeAny>>,
-		sideEffect: SideEffect | undefined,
-		successHandler: SuccessHandler,
-		errorHandler: ErrorHandler
+		sideEffect: ((data: Record<string, any>) => Promise<void>) | undefined,
+		successHandler: (c: Context) => Promise<Response>,
+		errorHandler: (c: Context, error: Error) => Promise<Response>
 	) {
-		return (app: Hono) => {
+		return (app: any) => {
 			app.on(method, pathPattern, async (c) => {
 				let body = method === "GET" ? c.req.query() : await c.req.parseBody()
 
