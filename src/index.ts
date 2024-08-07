@@ -109,7 +109,7 @@ type FormField =
 export class FormBuilder {
 	#fields: FormField[] = []
 	#method: "GET" | "POST"
-	#sideEffect?: (data: Record<string, any>) => Promise<void>
+	#sideEffect?: (c: Context, data: Record<string, any>) => Promise<void>
 	#successHandler?: (c: Context) => Promise<Response>
 	#errorHandler?: (c: Context, error: Error) => Promise<Response>
 	#pathPattern: string
@@ -179,7 +179,7 @@ export class FormBuilder {
 		return this
 	}
 
-	setSideEffect(fn: (data: Record<string, any>) => Promise<void>): FormBuilder {
+	setSideEffect(fn: (c: Context, data: Record<string, any>) => Promise<void>): FormBuilder {
 		this.#sideEffect = fn
 		return this
 	}

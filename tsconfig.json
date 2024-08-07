@@ -6,6 +6,7 @@
 		"module": "esnext",
 		"moduleResolution": "bundler",
 		"strict": true,
+		"strictFunctionTypes": true,
 		"forceConsistentCasingInFileNames": true,
 		"allowUnusedLabels": false,
 		"allowUnreachableCode": false,
