@@ -82,8 +82,6 @@ interface SelectFieldOptions {
 	options: Array<{ value: string; label: string }>
 }
 
-interface ColorFieldOptions {}
-
 interface TelFieldOptions {
 	optional?: boolean
 	placeholder?: string
@@ -103,8 +101,9 @@ type FormField =
 	| { type: "range"; name: string; label: string; options: RangeFieldOptions }
 	| { type: "file"; name: string; label: string; options: FileFieldOptions }
 	| { type: "select"; name: string; label: string; options: SelectFieldOptions }
-	| { type: "color"; name: string; label: string; options: ColorFieldOptions }
+	| { type: "color"; name: string; label: string; options: undefined }
 	| { type: "tel"; name: string; label: string; options: TelFieldOptions }
+	| { type: "hidden"; name: string; label: undefined; value: string; options: undefined }
 
 export class FormBuilder {
 	#fields: FormField[] = []
@@ -169,13 +168,18 @@ export class FormBuilder {
 		return this
 	}
 
-	addColor(name: string, label: string, options: ColorFieldOptions = {}): FormBuilder {
-		this.#fields.push({ name, label, type: "color", options })
+	addColor(name: string, label: string): FormBuilder {
+		this.#fields.push({ name, label, type: "color", options: undefined })
 		return this
 	}
 
 	addTel(name: string, label: string, options: TelFieldOptions = {}): FormBuilder {
 		this.#fields.push({ name, label, type: "tel", options })
+		return this
+	}
+
+	addHidden(name: string, value: string): FormBuilder {
+		this.#fields.push({ name, label: undefined, type: "hidden", value, options: undefined })
 		return this
 	}
 
@@ -281,6 +285,9 @@ export class FormBuilder {
 					case "color":
 						inputType = field.type
 						break
+					case "hidden":
+						html += `<input type="hidden" name="${field.name}" value="${field.value}">`
+						continue
 					case "select":
 						html += `<label>${field.label}:`
 						html += `<select name="${field.name}"${!field.options.optional ? " required" : ""}>`
@@ -393,6 +400,9 @@ export class FormBuilder {
 					let enumValues = field.options.options.map((opt) => opt.value)
 					schema = z.enum(enumValues as [string, ...string[]])
 					if (field.options.optional) schema = schema.optional()
+					break
+				case "hidden":
+					schema = z.string()
 					break
 			}
 			if (field.type !== "select" && field.type !== "color" && field.type !== "range" && field.type !== "checkbox") {
