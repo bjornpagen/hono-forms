@@ -103,7 +103,7 @@ type FormField =
 	| { type: "select"; name: string; label: string; options: SelectFieldOptions }
 	| { type: "color"; name: string; label: string; options: undefined }
 	| { type: "tel"; name: string; label: string; options: TelFieldOptions }
-	| { type: "hidden"; name: string; label: undefined; value: string; options: undefined }
+	| { type: "hidden"; name: string; label: undefined; options: undefined }
 
 export class FormBuilder {
 	#fields: FormField[] = []
@@ -178,8 +178,8 @@ export class FormBuilder {
 		return this
 	}
 
-	addHidden(name: string, value: string): FormBuilder {
-		this.#fields.push({ name, label: undefined, type: "hidden", value, options: undefined })
+	addHidden(name: string): FormBuilder {
+		this.#fields.push({ name, label: undefined, type: "hidden", options: undefined })
 		return this
 	}
 
@@ -286,7 +286,10 @@ export class FormBuilder {
 						inputType = field.type
 						break
 					case "hidden":
-						html += `<input type="hidden" name="${field.name}" value="${field.value}">`
+						let value = defaultValues[field.name] as any
+						html += `<input type="hidden" name="${field.name}"`
+						if (value !== undefined) html += ` value="${value}"`
+						html += `>`
 						continue
 					case "select":
 						html += `<label>${field.label}:`
